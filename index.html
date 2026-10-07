@@ -299,9 +299,28 @@
     <!-- University Units Section -->
     <div class="container">
         <h2 class="section-title">Browse Course Modules & Units</h2>
-        <p style="color: #64748b; margin-bottom: 25px;">Select a department below to view available past papers and short notes.</p>
+        <p style="color: #64748b; margin-bottom: 20px;">Select a semester to filter or search your unit code/title directly.</p>
         
-        <!-- Leave this container empty; JS will fill it out dynamically! -->
+        <!-- Interactive Search & Filtering Controls Grid -->
+        <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
+            <!-- Real-time Text Search Bar -->
+            <input type="text" id="unitSearchInput" class="form-input" placeholder="🔍 Search unit code or title (e.g., COMP 100, Programming)..." style="flex: 2; min-width: 280px;">
+            
+            <!-- Category/Semester Filter Dropdown -->
+            <select id="semesterFilterSelect" class="form-input" style="flex: 1; min-width: 180px; height: 45px; cursor: pointer;">
+                <option value="ALL">Show All Semesters</option>
+                <option value="Y1S1">Year 1 - Semester 1</option>
+                <option value="Y1S2">Year 1 - Semester 2</option>
+                <option value="Y2S1">Year 2 - Semester 1</option>
+                <option value="Y2S2">Year 2 - Semester 2</option>
+                <option value="Y3S1">Year 3 - Semester 1</option>
+                <option value="Y3S2">Year 3 - Semester 2</option>
+                <option value="Y4S1">Year 4 - Semester 1</option>
+                <option value="Y4S2">Year 4 - Semester 2</option>
+            </select>
+        </div>
+        
+        <!-- Target container where JavaScript injects your dynamic search lists -->
         <div id="dynamicUnitsRow" class="unit-row"></div>
     </div>
     <!-- Secure Student Gateways -->
