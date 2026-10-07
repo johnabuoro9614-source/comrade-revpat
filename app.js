@@ -68,18 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (stkBtn) {
         stkBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            const phoneNumber = document.getElementById('mpesaPhone').value.trim();
-            const mpesaRegex = /^(07|01)\d{8}\$/;
+            const enteredPhoneNumber = document.getElementById('mpesaPhone').value.trim();
+            const phoneNumber = enteredPhoneNumber.replace(/[\s()-]/g, '');
+            const internationalPhoneNumber = phoneNumber.match(/^\+?254([17]\d{8})$/);
+            const normalizedPhoneNumber = internationalPhoneNumber
+                ? `0${internationalPhoneNumber[1]}`
+                : phoneNumber;
+            const mpesaRegex = /^(07|01)\d{8}$/;
 
-            if (phoneNumber === "") {
+            if (enteredPhoneNumber === "") {
                 alert("🚨 Security Alert: Phone number field cannot be empty!");
                 return;
             }
-            if (!mpesaRegex.test(phoneNumber)) {
-                alert("❌ Invalid Format: Please use a valid number starting with 07 or 01.");
+            if (!mpesaRegex.test(normalizedPhoneNumber)) {
+                alert("❌ Invalid Format: Enter a 10-digit Kenyan mobile number starting with 07 or 01 (for example, 0712345678).");
                 return;
             }
-            alert("🔒 Secure Validation Passed!\nInitiating encrypted STK Push for " + phoneNumber + "...");
+            alert("🔒 Secure Validation Passed!\nInitiating encrypted STK Push for " + normalizedPhoneNumber + "...");
         });
     }
 });
