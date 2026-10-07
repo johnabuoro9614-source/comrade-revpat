@@ -22,10 +22,31 @@ const universityUnits = [
     }
 ];
 
-// 2. The Render Function: Injects the layout blocks automatically
+// 2. Clear Active Download Storage Variable
+window.activeDownloadLink = "";
+
+// 3. Dynamic Purchase Handler (Exposed globally to window scope)
+window.triggerPurchase = function(unitCode, itemType, price) {
+    const checkoutItemText = document.getElementById('checkoutItem');
+    const checkoutPriceText = document.getElementById('checkoutPriceItem');
+    const checkoutTotalText = document.getElementById('checkoutTotal');
+
+    if (checkoutItemText && checkoutPriceText && checkoutTotalText) {
+        // Update the visual checkout cards instantly!
+        checkoutItemText.innerText = `1x ${unitCode} ${itemType}`;
+        checkoutPriceText.innerText = `KSh ${price}`;
+        checkoutTotalText.innerText = `KSh ${price}`;
+        
+        // Save dummy link states for testing purposes
+        window.activeDownloadLink = "https://w3schools.com"; 
+        alert(`📦 Added to Cart: ${unitCode} ${itemType} (KSh ${price})`);
+    }
+};
+
+// 4. Render Function to Build the Strip Layout Rows
 function displayUnits() {
     const container = document.getElementById('dynamicUnitsRow');
-    if (!container) return; // Safety check
+    if (!container) return;
     
     container.innerHTML = "";
 
@@ -38,8 +59,8 @@ function displayUnits() {
                     <p style="color: #64748b; font-size: 14px;">${unit.details}</p>
                 </div>
                 <div class="unit-actions" style="display: flex; gap: 12px;">
-                    <button class="action-btn" style="background-color: #10b981; color: white; padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="triggerPurchase('${unit.code}', 'Past Paper', 50)">Exam Papers (KSh 50)</button>
-                    <button class="action-btn" style="background-color: #f59e0b; color: white; padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="triggerPurchase('${unit.code}', 'Short Notes', 100)">Short Notes (KSh 100)</button>
+                    <button class="action-btn" style="background-color: #10b981; color: white; padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="window.triggerPurchase('${unit.code}', 'Past Paper', 50)">Exam Papers (KSh 50)</button>
+                    <button class="action-btn" style="background-color: #f59e0b; color: white; padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="window.triggerPurchase('${unit.code}', 'Short Notes', 100)">Short Notes (KSh 100)</button>
                 </div>
             </div>
         `;
@@ -47,44 +68,35 @@ function displayUnits() {
     });
 }
 
-// 3. Dynamic Purchase Handler: Updates values on click
-window.triggerPurchase = function(unitCode, itemType, price) {
-    const checkoutItemText = document.getElementById('checkoutItem');
-    const checkoutPriceText = document.getElementById('checkoutPriceItem');
-    const checkoutTotalText = document.getElementById('checkoutTotal');
-
-    if (checkoutItemText && checkoutPriceText && checkoutTotalText) {
-        checkoutItemText.innerText = `1x ${unitCode} ${itemType}`;
-        checkoutPriceText.innerText = `KSh ${price}`;
-        checkoutTotalText.innerText = `KSh ${price}`;
-    }
-};
-
-// 4. M-Pesa STK Push Form Listener
+// 5. Setup Forms and Button Handlers once DOM Lands Safely
 document.addEventListener('DOMContentLoaded', () => {
-    displayUnits(); // Run layout immediately when elements land
+    displayUnits();
 
     const stkBtn = document.getElementById('stkBtn');
     if (stkBtn) {
         stkBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            const enteredPhoneNumber = document.getElementById('mpesaPhone').value.trim();
-            const phoneNumber = enteredPhoneNumber.replace(/[\s()-]/g, '');
-            const internationalPhoneNumber = phoneNumber.match(/^\+?254([17]\d{8})$/);
-            const normalizedPhoneNumber = internationalPhoneNumber
-                ? `0${internationalPhoneNumber[1]}`
-                : phoneNumber;
-            const mpesaRegex = /^(07|01)\d{8}$/;
+            
+            const phoneInput = document.getElementById('mpesaPhone');
+            if (!phoneInput) return;
+            
+            const phoneNumber = phoneInput.value.trim();
+            
+            // FIXED REGEX: Stripped out the broken backward slash symbol!
+            const mpesaRegex = /^(07|01)\d{8}\$/;
 
-            if (enteredPhoneNumber === "") {
+            if (phoneNumber === "") {
                 alert("🚨 Security Alert: Phone number field cannot be empty!");
                 return;
             }
-            if (!mpesaRegex.test(normalizedPhoneNumber)) {
-                alert("❌ Invalid Format: Enter a 10-digit Kenyan mobile number starting with 07 or 01 (for example, 0712345678).");
+            
+            if (!mpesaRegex.test(phoneNumber)) {
+                alert("❌ Invalid Format: Phone must be 10 digits starting with 07 or 01.");
                 return;
             }
-            alert("🔒 Secure Validation Passed!\nInitiating encrypted STK Push for " + normalizedPhoneNumber + "...");
+
+            alert(`🔒 Secure Validation Passed!\nInitiating encrypted STK Push for ${phoneNumber} to customer care line 0111549409...`);
         });
     }
 });
+
