@@ -3,7 +3,7 @@ const universityUnits = [
     // === YEAR 1 - SEMESTER 1 ===
     { 
         code: "COMP 100", title: "Foundations of Computing", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
-        paperStatus: "Available", paperLink: "https://google.com",
+        paperStatus: "Coming Soon", paperLink: "https://google.com",
         notesStatus: "Coming Soon", notesLink: ""
     },
     { 
@@ -13,8 +13,8 @@ const universityUnits = [
     },
     { 
         code: "SOEN 101", title: "Introduction to Software Engineering", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
-        paperStatus: "Available", paperLink: "https://google.com",
-        notesStatus: "Available", notesLink: "https://google.com"
+        paperStatus: "Coming Soon", paperLink: "https://google.com",
+        notesStatus: "Coming Soon", notesLink: "https://google.com"
     },
     { 
         code: "COMS 101", title: "Communication Skills", semester: "Y1S1", details: "Year 1 - Semester 1 Common Unit",
