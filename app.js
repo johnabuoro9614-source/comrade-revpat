@@ -3,7 +3,7 @@ const universityUnits = [
     // === YEAR 1 - SEMESTER 1 ===
     { 
         code: "COMP 100", title: "Foundations of Computing", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
-        paperStatus: "Coming Soon", paperLink: "https://google.com",
+        paperStatus: "Available", paperLink: "https://google.com",
         notesStatus: "Coming Soon", notesLink: ""
     },
     { 
