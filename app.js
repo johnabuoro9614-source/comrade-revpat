@@ -7,7 +7,7 @@ const universityUnits = [
         notesStatus: "Coming Soon", notesLink: ""
     },
     { 
-        code: "MATH 101", title: "Discrete Mathematics", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
+        code: "MATH 101", title: "Basic Mathematics", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
         paperStatus: "Coming Soon", paperLink: "",
         notesStatus: "Coming Soon", notesLink: ""
     },
@@ -51,6 +51,7 @@ const universityUnits = [
 ];
 
 window.activeDownloadLink = "";
+window.activeDownloadAmount = 0;
 
 // 2. Global Purchase Click Handler for Selection Synchronization
 window.triggerPurchase = function(unitCode, itemType, price, status, fileLink) {
@@ -69,6 +70,7 @@ window.triggerPurchase = function(unitCode, itemType, price, status, fileLink) {
         checkoutTotalText.innerText = "KSh " + price;
         
         window.activeDownloadLink = fileLink; 
+        window.activeDownloadAmount = price;
         alert("Selected: " + unitCode + " " + itemType + " (KSh " + price + "). Enter your phone details above to request access.");
     }
 };
@@ -151,11 +153,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            alert("Secure Validation Passed!\nInitiating encrypted backend request for " + phoneNumber + "...\n\nYour file repository token triggers dynamically on transaction settlement.");
-            
-            setTimeout(() => {
-                window.open(window.activeDownloadLink, '_blank');
-            }, 2000);
+            alert("Front-end validation passed.\nSending your payment request to the backend...");
+
+            fetch('http://127.0.0.1:5000/stkpush', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phone: phoneNumber,
+                    amount: window.activeDownloadAmount
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Backend returned HTTP " + response.status);
+                }
+                return response.json();
+            })
+            .then(serverPayload => {
+                console.log("Backend response received:", serverPayload);
+                alert("Gateway Response: " + serverPayload.message);
+
+                if (serverPayload.status === "Success") {
+                    setTimeout(() => {
+                        window.open(window.activeDownloadLink, '_blank');
+                    }, 1000);
+                }
+            })
+            .catch(connectionError => {
+                console.error("Backend request failed:", connectionError);
+                alert("Backend connection failed. Ensure app.py is running on port 5000.");
+            });
         });
     }
 });
