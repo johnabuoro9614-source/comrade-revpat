@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import os
 import requests
 from requests.auth import HTTPBasicAuth
 from flask_cors import CORS
@@ -8,10 +9,10 @@ import base64
 app = Flask(__name__)
 CORS(app) # Connects your GitHub frontend to this backend layout safely
 
-# 🔐 YOUR AUTHENTIC DARAJA GATEWAY CREDENTIALS
-CONSUMER_KEY = "lAMjUC7gJAkyIvUqONIubG992NT9OODbx1bfpA1ubGCYdFEK"
-CONSUMER_SECRET = "ncMQ7WqlXa84fOMQlbuibBFSFab9GROvvtLMCOddJW4NOitSVdl1P8ZrABlR4LP4"
-PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+# 🛡️ SYSTEM VARIABLES CONFIGURATION: Safely pulls keys from Render's hidden environment variables
+CONSUMER_KEY = os.environ.get("CONSUMER_KEY")
+CONSUMER_SECRET = os.environ.get("CONSUMER_SECRET")
+PASSKEY = os.environ.get("PASSKEY")
 
 BUSINESS_SHORT_CODE = "174379" # Standard Safaricom Express Test Shortcode
 
@@ -96,4 +97,3 @@ def initiate_live_stk():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-
