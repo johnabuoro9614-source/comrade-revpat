@@ -22,7 +22,10 @@ CONSUMER_SECRET = os.environ.get("CONSUMER_SECRET")
 PASSKEY = os.environ.get("PASSKEY")
 BUSINESS_SHORT_CODE = os.environ.get("BUSINESS_SHORT_CODE", "174379")
 MPESA_ENVIRONMENT = os.environ.get("MPESA_ENVIRONMENT", "sandbox").lower()
-MPESA_CALLBACK_URL = os.environ.get("MPESA_CALLBACK_URL")
+MPESA_CALLBACK_URL = os.environ.get(
+    "MPESA_CALLBACK_URL",
+    "https://comrade-revpat-backend.onrender.com/mpesa-callback",
+)
 PAYMENT_DB_PATH = os.environ.get(
     "PAYMENT_DB_PATH",
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "payments.sqlite3"),
