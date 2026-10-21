@@ -52,6 +52,7 @@ const universityUnits = [
 
 window.activeDownloadLink = "";
 window.activeDownloadAmount = 0;
+window.pendingCheckout = null;
 
 // 2. Global Purchase Click Handler for Selection Synchronization
 window.triggerPurchase = function(unitCode, itemType, price, status, fileLink) {
@@ -134,57 +135,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const stkBtn = document.getElementById('stkBtn');
     if (stkBtn) {
-        stkBtn.addEventListener('click', function(event) {
+        stkBtn.addEventListener('click', async function(event) {
             event.preventDefault();
-            const phoneNumber = document.getElementById('mpesaPhone').value.trim();
+            const phoneInput = document.getElementById('mpesaPhone');
+            const feedbackContainer = document.getElementById('paymentStatusFeedback');
+            const phoneNumber = phoneInput.value.trim();
             const mpesaRegex = /^(07|01)\d{8}$/;
 
+            function showFeedback(text, isError) {
+                feedbackContainer.textContent = text;
+                feedbackContainer.style.display = "block";
+                feedbackContainer.style.backgroundColor = isError ? "#fee2e2" : "#dcfce7";
+                feedbackContainer.style.color = isError ? "#991b1b" : "#166534";
+            }
+
             if (phoneNumber === "") {
-                alert("Security Alert: Phone number field cannot be empty!");
+                showFeedback("⚠️ Security Alert: Phone number field cannot be empty!", true);
                 return;
             }
             if (!mpesaRegex.test(phoneNumber)) {
-                alert("Invalid Format: Please check your phone entries (10 digits starting with 07 or 01).");
+                showFeedback("❌ Invalid Format: Use a 10-digit number starting with 07 or 01.", true);
                 return;
             }
             
-            if (!window.activeDownloadLink) {
-                alert("Cart Empty: Please tap an available active asset card before submitting payment.");
+            const downloadLink = window.activeDownloadLink;
+            const amount = window.activeDownloadAmount;
+            if (!downloadLink || ![50, 100].includes(amount)) {
+                showFeedback("⚠️ Cart Empty: Select an available unit resource card first.", true);
                 return;
             }
 
-            alert("Front-end validation passed.\nSending your payment request to the backend...");
+            const downloadWindow = window.open('about:blank', '_blank');
+            stkBtn.disabled = true;
+            showFeedback("🔒 Requesting secure transaction authorization from Safaricom...", false);
 
-            fetch('http://127.0.0.1:5000/stkpush', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    phone: phoneNumber,
-                    amount: window.activeDownloadAmount
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Backend returned HTTP " + response.status);
+            try {
+                let checkoutId;
+                let selectedDownloadLink = downloadLink;
+                if (window.pendingCheckout) {
+                    checkoutId = window.pendingCheckout.checkoutId;
+                    selectedDownloadLink = window.pendingCheckout.downloadLink;
+                    showFeedback("⏳ Checking the existing payment request...", false);
+                } else {
+                    const response = await fetch('https://comrade-revpat-backend.onrender.com/stkpush', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone: phoneNumber, amount: amount })
+                    });
+                    const serverPayload = await response.json();
+                    if (!response.ok || serverPayload.status !== "Success" || !serverPayload.checkout_id) {
+                        throw new Error(serverPayload.message || "The payment request was rejected.");
+                    }
+                    checkoutId = serverPayload.checkout_id;
+                    window.pendingCheckout = { checkoutId: checkoutId, downloadLink: downloadLink };
+                    showFeedback("📱 STK Push sent. Enter your M-Pesa PIN; checking for payment confirmation...", false);
                 }
-                return response.json();
-            })
-            .then(serverPayload => {
-                console.log("Backend response received:", serverPayload);
-                alert("Gateway Response: " + serverPayload.message);
 
-                if (serverPayload.status === "Success") {
-                    setTimeout(() => {
-                        window.open(window.activeDownloadLink, '_blank');
-                    }, 1000);
+                let paymentStatus = "pending";
+                for (let attempt = 0; attempt < 30 && paymentStatus === "pending"; attempt += 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    const statusResponse = await fetch(
+                        'https://comrade-revpat-backend.onrender.com/check-payment/' +
+                        encodeURIComponent(checkoutId)
+                    );
+                    const statusPayload = await statusResponse.json();
+                    if (!statusResponse.ok) {
+                        throw new Error(statusPayload.message || "Could not check payment status.");
+                    }
+                    paymentStatus = statusPayload.status;
                 }
-            })
-            .catch(connectionError => {
-                console.error("Backend request failed:", connectionError);
-                alert("Backend connection failed. Ensure app.py is running on port 5000.");
-            });
+
+                if (paymentStatus === "paid") {
+                    window.pendingCheckout = null;
+                    showFeedback("✅ Payment confirmed. Opening your selected resource...", false);
+                    if (downloadWindow) {
+                        downloadWindow.location = selectedDownloadLink;
+                    } else {
+                        window.location.assign(selectedDownloadLink);
+                    }
+                } else if (paymentStatus === "failed") {
+                    window.pendingCheckout = null;
+                    if (downloadWindow) downloadWindow.close();
+                    showFeedback("❌ Payment was not completed. No download was opened.", true);
+                } else {
+                    if (downloadWindow) downloadWindow.close();
+                    showFeedback("⏳ Payment is still pending. Wait for the M-Pesa result, then click again to check without creating another charge.", true);
+                }
+            } catch (error) {
+                if (downloadWindow) downloadWindow.close();
+                showFeedback("❌ Checkout error: " + error.message, true);
+            } finally {
+                stkBtn.disabled = false;
+            }
         });
     }
 });
