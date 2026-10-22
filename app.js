@@ -3,8 +3,8 @@ const universityUnits = [
     // === YEAR 1 - SEMESTER 1 ===
     { 
         code: "COMP 100", title: "Foundations of Computing", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
-        paperStatus: "Coming soon", paperLink: "https://google.com",
-        notesStatus: "Available", notesLink: "https://drive.google.com/file/d/1ld4MQ57KQGKEFy4UtpfuSkq9XLs9uoHj/view?usp=sharing"
+        paperStatus: "Available", paperLink: "https://drive.google.com/file/d/1R7jA9VZTK01GZVyl5NwZJSHVgcbdCyW-/view?usp=drive_link",
+        notesStatus: "Available", notesLink: "https://drive.google.com/file/d/1rhFSTj_OdFPp6lFjRnXH419RI_XXxqfO/view?usp=drive_link"
     },
     { 
         code: "MATH 101", title: "Basic Mathematics", semester: "Y1S1", details: "Year 1 - Semester 1 Core Unit",
